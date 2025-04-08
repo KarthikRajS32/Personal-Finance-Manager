@@ -88,7 +88,6 @@ export default function PrivateNavbar() {
 
               {/* Logout + Profile */}
               <div className="flex items-center space-x-10">
-
                 {/* Profile Dropdown */}
                 {user && (
                   <Menu as="div" className="relative">
@@ -107,7 +106,10 @@ export default function PrivateNavbar() {
                       leaveFrom="transform opacity-100 scale-100"
                       leaveTo="transform opacity-0 scale-95"
                     >
-                      <Menu.Items className="absolute w-auto right-0 z-10 mt-2 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <Menu.Items
+                        className="absolute w-auto z-10 mt-2 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none 
+  right-1/2 translate-x-1/2 sm:right-0 sm:translate-x-0"
+                      >
                         <div className="px-4 py-2 text-sm text-gray-700">
                           Email:{" "}
                           <span className="font-medium">{user?.email}</span>
