@@ -11,9 +11,11 @@ const app = express();
 
 //! Connect to MongoDB
 mongoose
-  .connect("mongodb://localhost:27017/personal-finance-db")
-  .then(() => console.log("✅ DB Connected"))
-  .catch((e) => console.error("❌ DB Connection Error:", e));
+  .connect(
+    "mongodb+srv://karthi:Karthi@32@financeapp.afnd7.mongodb.net/Finance?retryWrites=true&w=majority&appName=FinanceApp"
+  )
+  .then(() => console.log(" DB Connected"))
+  .catch((e) => console.error(" DB Connection Error:", e));
 
 //! Middlewares
 app.use(cors());
@@ -22,7 +24,7 @@ app.use(express.json());
 //! Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/categories", categoryRouter);
-app.use("/api/v1/transactions", transactionRouter); // ✅ Correct route
+app.use("/api/v1/transactions", transactionRouter); 
 
 //! Error Handler Middleware
 app.use(errorHandler);
