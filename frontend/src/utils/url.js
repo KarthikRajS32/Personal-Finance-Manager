@@ -1,1 +1,1 @@
-export const BASE_URL = "https://personal-finance-manager-c5ba.onrender.com";
+export const BASE_URL = "https://personal-finance-manager-g5mm.onrender.com";

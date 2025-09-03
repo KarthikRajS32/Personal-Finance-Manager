@@ -1,25 +1,26 @@
 const jwt = require("jsonwebtoken");
 
 const isAuthenticated = async (req, res, next) => {
-    //! Get the token from the header
-    const headerObj = req.headers;
-    const token = headerObj?.authorization?.split(' ')[1]
-    //!Verify the token
-    const verifyToken = jwt.verify(token, "masynctechKey",(err, decoded)=>{
-        if(err){
-            return false;
-        }else{
-            return decoded;
-        }
-    });
-    if(verifyToken){
-        //!Save the user req obj
-        req.user = verifyToken.id;
-        next();
-    }else{
-        const err = new Error("Token expired, login again");
-        next(err);
+  try {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return res
+        .status(401)
+        .json({ message: "No token provided, authorization denied" });
     }
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, "masynctechKey"); // Replace with process.env.JWT_SECRET in production
+    req.user = decoded.id;
+
+    next();
+  } catch (err) {
+    return res
+      .status(401)
+      .json({ message: "Token expired or invalid, please login again" });
+  }
 };
 
 module.exports = isAuthenticated;

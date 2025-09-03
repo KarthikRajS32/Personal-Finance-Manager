@@ -16,9 +16,9 @@ const validationSchema = Yup.object({
   password: Yup.string()
     .min(6, "Password must be at least 6 characters long")
     .required("Password is required"),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref("password"), null], "Passwords must match")
-    .required("Confirming your password is required"),
+  // confirmPassword: Yup.string()
+  //   .oneOf([Yup.ref("password"), null], "Passwords must match")
+  //   .required("Confirming your password is required"),
 });
 
 const RegistrationForm = () => {
@@ -35,15 +35,16 @@ const RegistrationForm = () => {
       email: "",
       password: "",
       username: "",
-      confirmPassword: "", 
+      // confirmPassword: "",
     },
     validationSchema,
     onSubmit: async (values) => {
+      const { username, email, password } = values;
       try {
-        const data = await mutateAsync(values);
-        console.log("Registration successful:", data);
+        const data = await mutateAsync({ username, email, password });
+        console.log("✅ Registration successful:", data);
       } catch (e) {
-        console.error("Registration failed:", e);
+        console.error("❌ Registration failed:", e?.response?.data || e.message);
       }
     },
   });
@@ -51,7 +52,7 @@ const RegistrationForm = () => {
   // Redirect on success
   useEffect(() => {
     if (isSuccess) {
-      setTimeout(() => navigate("/login"), 3000);
+      setTimeout(() => navigate("/login"), 1000);
     }
   }, [isSuccess, navigate]);
 
@@ -123,7 +124,7 @@ const RegistrationForm = () => {
         )}
       </div>
 
-      <div className="relative">
+      {/* <div className="relative">
         <FaLock className="absolute top-3 left-3 text-gray-400" />
         <input
           id="confirmPassword"
@@ -137,7 +138,7 @@ const RegistrationForm = () => {
             {formik.errors.confirmPassword}
           </span>
         )}
-      </div>
+      </div> */}
 
       <button
         type="submit"

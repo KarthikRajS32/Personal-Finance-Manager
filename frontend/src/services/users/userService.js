@@ -14,12 +14,20 @@ export const loginAPI = async ({ email, password }) => {
 };
 //! register
 export const registerAPI = async ({ email, password, username }) => {
-  const response = await axios.post(`${BASE_URL}/users/register`, {
-    email,
-    password,
-    username,
-  });
-  //Return a promise
+  const response = await axios.post(
+    `${BASE_URL}/users/register`,
+    {
+      email,
+      password,
+      username,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json", // ✅ REQUIRED for Express to parse body
+      },
+    }
+  );
+
   return response.data;
 };
 //! change password
