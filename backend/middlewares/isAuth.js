@@ -12,7 +12,7 @@ const isAuthenticated = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, "masynctechKey"); // Replace with process.env.JWT_SECRET in production
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "masynctechKey");
     req.user = decoded.id;
 
     next();

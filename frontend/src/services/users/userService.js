@@ -1,8 +1,6 @@
 import axios from "axios";
 import { BASE_URL } from "../../utils/url";
 import { getUserFromStorage } from "../../utils/getUserFromStorage";
-//! Get the token
-const token = getUserFromStorage();
 //! Login
 export const loginAPI = async ({ email, password }) => {
   const response = await axios.post(`${BASE_URL}/api/v1/users/login`, {
@@ -32,6 +30,7 @@ export const registerAPI = async ({ email, password, username }) => {
 };
 //! change password
 export const changePasswordAPI = async (newPassword) => {
+  const token = getUserFromStorage();
   const response = await axios.put(
     `${BASE_URL}/api/v1/users/change-password`,
     {
@@ -49,6 +48,7 @@ export const changePasswordAPI = async (newPassword) => {
 
 //! update Profile
 export const updateProfileAPI = async ({ email, username }) => {
+  const token = getUserFromStorage();
   const response = await axios.put(
     `${BASE_URL}/api/v1/users/update-profile`,
     {
