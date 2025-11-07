@@ -5,7 +5,7 @@ import { getUserFromStorage } from "../../utils/getUserFromStorage";
 const token = getUserFromStorage();
 //! Login
 export const loginAPI = async ({ email, password }) => {
-  const response = await axios.post(`${BASE_URL}/users/login`, {
+  const response = await axios.post(`${BASE_URL}/api/v1/users/login`, {
     email,
     password,
   });
@@ -15,7 +15,7 @@ export const loginAPI = async ({ email, password }) => {
 //! register
 export const registerAPI = async ({ email, password, username }) => {
   const response = await axios.post(
-    `${BASE_URL}/users/register`,
+    `${BASE_URL}/api/v1/users/register`,
     {
       email,
       password,
@@ -33,7 +33,7 @@ export const registerAPI = async ({ email, password, username }) => {
 //! change password
 export const changePasswordAPI = async (newPassword) => {
   const response = await axios.put(
-    `${BASE_URL}/users/change-password`,
+    `${BASE_URL}/api/v1/users/change-password`,
     {
       newPassword,
     },
@@ -50,7 +50,7 @@ export const changePasswordAPI = async (newPassword) => {
 //! update Profile
 export const updateProfileAPI = async ({ email, username }) => {
   const response = await axios.put(
-    `${BASE_URL}/users/update-profile`,
+    `${BASE_URL}/api/v1/users/update-profile`,
     {
       email,
       username,

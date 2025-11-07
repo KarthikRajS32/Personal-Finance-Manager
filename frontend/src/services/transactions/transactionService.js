@@ -13,7 +13,7 @@ export const addTransactionAPI = async ({
   try {
     const token = getUserFromStorage();
     const response = await axios.post(
-      `${BASE_URL}/transactions/create`,
+      `${BASE_URL}/api/v1/transactions/create`,
       { category, date, description, amount, type },
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -38,7 +38,7 @@ export const listTransactionsAPI = async ({
 }) => {
   try {
     const token = getUserFromStorage();
-    const response = await axios.get(`${BASE_URL}/transactions/lists`, {
+    const response = await axios.get(`${BASE_URL}/api/v1/transactions/lists`, {
       params: { category, endDate, startDate, type },
       headers: { Authorization: `Bearer ${token}` },
     });
@@ -57,7 +57,7 @@ export const updateTransactionAPI = async ({ id, ...updateData }) => {
   try {
     const token = getUserFromStorage();
     const response = await axios.put(
-      `${BASE_URL}/transactions/update/${id}`,
+      `${BASE_URL}/api/v1/transactions/update/${id}`,
       updateData,
       {
         headers: { Authorization: `Bearer ${token}` },
@@ -78,7 +78,7 @@ export const deleteTransactionAPI = async (id) => {
   try {
     const token = getUserFromStorage();
     const response = await axios.delete(
-      `${BASE_URL}/transactions/delete/${id}`,
+      `${BASE_URL}/api/v1/transactions/delete/${id}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }

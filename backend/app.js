@@ -14,18 +14,30 @@ const app = express();
 //! Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    serverSelectionTimeoutMS: 10000, // 10s timeout
+    serverSelectionTimeoutMS: 30000, // 30s timeout
+    socketTimeoutMS: 45000, // 45s timeout
+    bufferMaxEntries: 0, // Disable mongoose buffering
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    minPoolSize: 5, // Maintain a minimum of 5 socket connections
   })
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection failed:", err);
+    process.exit(1); // Exit if DB connection fails
+  });
 
-  .then(() => console.log("✅ DB Connected"))
-  .catch((e) => console.error("❌ DB Connection Error:", e));
+// Handle MongoDB connection events
+mongoose.connection.on('connected', () => {
+  console.log('✅ Mongoose connected to MongoDB');
+});
 
-// mongoose
-//   .connect(process.env.MONGO_URI)
-//   .then(() => console.log("✅ MongoDB connected"))
-//   .catch((err) => console.error("❌ MongoDB connection failed", err));
+mongoose.connection.on('error', (err) => {
+  console.error('❌ Mongoose connection error:', err);
+});
+
+mongoose.connection.on('disconnected', () => {
+  console.log('⚠️ Mongoose disconnected');
+});
 
 //! Middlewares
 app.use(cors());
