@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { IoLogOutOutline } from "react-icons/io5";
 import { SiAuthy } from "react-icons/si";
 import { logoutAction, loginAction } from "../../redux/slice/authSlice";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle, FaBell } from "react-icons/fa";
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
@@ -34,11 +34,15 @@ export default function PrivateNavbar() {
   };
 
   const navigation = [
-    { name: "Home", href: "/" },
-    { name: "Add Transaction", href: "/add-transaction" },
-    { name: "Add Category", href: "/add-category" },
-    { name: "Categories", href: "/categories" },
     { name: "Dashboard", href: "/dashboard" },
+    { name: "Transactions", href: "/add-transaction" },
+    { name: "Categories", href: "/categories" },
+    { name: "Budgets", href: "/budgets" },
+    { name: "Goals", href: "/goals" },
+    { name: "Forecast", href: "/forecast" },
+    { name: "Reports", href: "/reports" },
+    { name: "Notifications", href: "/notifications" },
+    { name: "Analytics", href: "/analytics" },
   ];
 
   return (
@@ -131,7 +135,7 @@ export default function PrivateNavbar() {
                             </span>
                           )}
                         </div>
-                        <div className="px-4 py-2">
+                        <div className="px-4 py-2 border-t border-gray-200">
                           {isEditing ? (
                             <button
                               onClick={handleSave}
@@ -148,6 +152,19 @@ export default function PrivateNavbar() {
                             </button>
                           )}
                         </div>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <Link
+                              to="/profile"
+                              className={classNames(
+                                active ? "bg-gray-100" : "",
+                                "block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                              )}
+                            >
+                              Profile Settings
+                            </Link>
+                          )}
+                        </Menu.Item>
                       </Menu.Items>
                     </Transition>
                   </Menu>

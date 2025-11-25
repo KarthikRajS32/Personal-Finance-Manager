@@ -72,6 +72,44 @@ const transactionController = {
       res.json({ message: "Transaction removed" });
     }
   }),
+
+  //!analytics
+  getAnalytics: asyncHandler(async (req, res) => {
+    const { startDate, endDate } = req.query;
+    let filters = { user: req.user };
+    
+    if (startDate && endDate) {
+      filters.date = {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      };
+    }
+
+    // Category-wise expense distribution
+    const categoryData = await Transaction.aggregate([
+      { $match: { ...filters, type: "expense" } },
+      { $group: { _id: "$category", total: { $sum: "$amount" } } },
+      { $sort: { total: -1 } }
+    ]);
+
+    // Monthly expense trends
+    const monthlyData = await Transaction.aggregate([
+      { $match: filters },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$date" },
+            month: { $month: "$date" },
+            type: "$type"
+          },
+          total: { $sum: "$amount" }
+        }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+    ]);
+
+    res.json({ categoryData, monthlyData });
+  }),
 };
 
 module.exports = transactionController;

@@ -51,4 +51,12 @@ router.put("/change-password", isAuthenticated, usersController.changeUserPasswo
 // ✅ Update user profile (protected)
 router.put("/update-profile", isAuthenticated, usersController.updateUserProfile);
 
+// ✅ MFA routes
+router.post("/setup-mfa", isAuthenticated, usersController.setupMFA);
+router.post("/verify-mfa", isAuthenticated, usersController.verifyMFA);
+router.post("/disable-mfa", isAuthenticated, usersController.disableMFA);
+
+// ✅ Get user settings
+router.get("/settings", isAuthenticated, usersController.getUserSettings);
+
 module.exports = router; // ✅ export as 'router' — you can import as 'userRouter' in server.js

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useFormik } from "formik";
-import { useNavigate } from "react-router-dom";
 import * as Yup from "yup";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
@@ -8,64 +7,94 @@ import {
   FaCalendarAlt,
   FaRegCommentDots,
   FaWallet,
+  FaRedoAlt,
+  FaToggleOn,
+  FaToggleOff,
 } from "react-icons/fa";
 import { listCategoriesAPI } from "../../services/category/categoryService";
 import { addTransactionAPI } from "../../services/transactions/transactionService";
+import { createRecurringExpenseAPI } from "../../services/recurringExpenses/recurringExpenseService";
 import AlertMessage from "../Alert/AlertMessage";
 
-const validationSchema = Yup.object({
-  type: Yup.string()
-    .required("Transaction type is required")
-    .oneOf(["income", "expense"]),
-  amount: Yup.number()
-    .required("Amount is required")
-    .positive("Amount must be positive"),
-  category: Yup.string().required("Category is required"),
-  date: Yup.date().required("Date is required"),
-  description: Yup.string(),
-});
+const getValidationSchema = (isRecurring) => {
+  const baseSchema = {
+    amount: Yup.number().required("Amount is required").positive("Amount must be positive"),
+    category: Yup.string().required("Category is required"),
+    description: Yup.string(),
+  };
+
+  if (isRecurring) {
+    return Yup.object({
+      ...baseSchema,
+      name: Yup.string().required("Name is required"),
+      frequency: Yup.string().required("Frequency is required"),
+      startDate: Yup.date().required("Start date is required"),
+      endDate: Yup.date().min(Yup.ref("startDate"), "End date must be after start date"),
+    });
+  } else {
+    return Yup.object({
+      ...baseSchema,
+      type: Yup.string().required("Transaction type is required").oneOf(["income", "expense"]),
+      date: Yup.date().required("Date is required"),
+    });
+  }
+};
 
 
 
 const TransactionForm = () => {
-  //Navigate
-  const navigate = useNavigate();
-  
+  const [isRecurring, setIsRecurring] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // Mutation
-  const {
-    mutateAsync,
-    isPending,
-    isError: isAddTranErr,
-    error: transErr,
-    isSuccess,
-  } = useMutation({
+  const transactionMutation = useMutation({
     mutationFn: addTransactionAPI,
     mutationKey: ["add-transaction"],
   });
-  //fetching
-  const { data, isError, isLoading, isFetched, error, refetch } = useQuery({
+
+  const recurringMutation = useMutation({
+    mutationFn: createRecurringExpenseAPI,
+    mutationKey: ["add-recurring-expense"],
+  });
+
+  const { data: categories, isError, error } = useQuery({
     queryFn: listCategoriesAPI,
     queryKey: ["list-categories"],
   });
 
+  const currentMutation = isRecurring ? recurringMutation : transactionMutation;
+
+  const getInitialValues = () => {
+    if (isRecurring) {
+      return {
+        name: "",
+        amount: "",
+        category: "",
+        frequency: "",
+        startDate: "",
+        endDate: "",
+        description: "",
+      };
+    } else {
+      return {
+        type: "",
+        amount: "",
+        category: "",
+        date: "",
+        description: "",
+      };
+    }
+  };
+
   const formik = useFormik({
-    initialValues: {
-      type: "",
-      amount: "",
-      category: "",
-      date: "",
-      description: "",
-    },
-    validationSchema,
-    
+    initialValues: getInitialValues(),
+    validationSchema: getValidationSchema(isRecurring),
+    enableReinitialize: true,
     onSubmit: async (values, { resetForm }) => {
       try {
-        await mutateAsync(values);
+        await currentMutation.mutateAsync(values);
         resetForm();
         setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000); // hide after 3 seconds
+        setTimeout(() => setShowSuccess(false), 3000);
       } catch (e) {
         console.error(e);
       }
@@ -79,46 +108,79 @@ const TransactionForm = () => {
     >
       <div className="text-center">
         <h2 className="text-2xl font-semibold text-gray-800">
-          Transaction Details
+          {isRecurring ? "Add Recurring Expense" : "Add Transaction"}
         </h2>
-        <p className="text-gray-600">Fill in the details below.</p>
+        <p className="text-gray-600">
+          {isRecurring ? "Set up automatic recurring payments" : "Fill in the transaction details"}
+        </p>
       </div>
-      {/* Display alert message */}
+
+      {/* Toggle Switch */}
+      <div className="flex items-center justify-center gap-3 p-3 bg-gray-50 rounded-lg">
+        <span className={`font-medium ${!isRecurring ? 'text-blue-600' : 'text-gray-500'}`}>One-time</span>
+        <button
+          type="button"
+          onClick={() => setIsRecurring(!isRecurring)}
+          className="text-2xl text-blue-500 hover:text-blue-600"
+        >
+          {isRecurring ? <FaToggleOn /> : <FaToggleOff />}
+        </button>
+        <span className={`font-medium ${isRecurring ? 'text-blue-600' : 'text-gray-500'}`}>Recurring</span>
+      </div>
 
       {isError && (
         <AlertMessage
           type="error"
-          message={
-            error?.response?.data?.message ||
-            "Something happened please try again later"
-          }
+          message={error?.response?.data?.message || "Something went wrong"}
         />
       )}
       {showSuccess && (
-        <AlertMessage type="success" message="Transaction added successfully" />
+        <AlertMessage
+          type="success"
+          message={`${isRecurring ? 'Recurring expense' : 'Transaction'} added successfully`}
+        />
       )}
-      {/* Transaction Type Field */}
-      <div className="space-y-2">
-        <label
-          htmlFor="type"
-          className="flex gap-2 items-center text-gray-700 font-medium"
-        >
-          <FaWallet className="text-blue-500" />
-          <span>Type</span>
-        </label>
-        <select
-          {...formik.getFieldProps("type")}
-          id="type"
-          className="block w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-        >
-          <option value="">Select transaction type</option>
-          <option value="income">Income</option>
-          <option value="expense">Expense</option>
-        </select>
-        {formik.touched.type && formik.errors.type && (
-          <p className="text-red-500 text-xs">{formik.errors.type}</p>
-        )}
-      </div>
+      {/* Name Field (Recurring only) */}
+      {isRecurring && (
+        <div className="space-y-2">
+          <label htmlFor="name" className="flex gap-2 items-center text-gray-700 font-medium">
+            <FaRegCommentDots className="text-blue-500" />
+            <span>Name</span>
+          </label>
+          <input
+            type="text"
+            {...formik.getFieldProps("name")}
+            id="name"
+            placeholder="e.g., Netflix Subscription"
+            className="block w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+          />
+          {formik.touched.name && formik.errors.name && (
+            <p className="text-red-500 text-xs">{formik.errors.name}</p>
+          )}
+        </div>
+      )}
+
+      {/* Transaction Type Field (One-time only) */}
+      {!isRecurring && (
+        <div className="space-y-2">
+          <label htmlFor="type" className="flex gap-2 items-center text-gray-700 font-medium">
+            <FaWallet className="text-blue-500" />
+            <span>Type</span>
+          </label>
+          <select
+            {...formik.getFieldProps("type")}
+            id="type"
+            className="block w-full p-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+          >
+            <option value="">Select transaction type</option>
+            <option value="income">Income</option>
+            <option value="expense">Expense</option>
+          </select>
+          {formik.touched.type && formik.errors.type && (
+            <p className="text-red-500 text-xs">{formik.errors.type}</p>
+          )}
+        </div>
+      )}
 
       {/* Amount Field */}
       <div className="flex flex-col space-y-1">
@@ -150,13 +212,11 @@ const TransactionForm = () => {
           className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
         >
           <option value="">Select a category</option>
-          {data?.map((category) => {
-            return (
-              <option key={category?._id} value={category?.name}>
-                {category?.name}
-              </option>
-            );
-          })}
+          {categories?.filter(cat => isRecurring ? cat.type === "expense" : true).map((category) => (
+            <option key={category?._id} value={category?.name}>
+              {category?.name}
+            </option>
+          ))}
         </select>
         {formik.touched.category && formik.errors.category && (
           <p className="text-red-500 text-xs italic">
@@ -165,22 +225,80 @@ const TransactionForm = () => {
         )}
       </div>
 
-      {/* Date Field */}
-      <div className="flex flex-col space-y-1">
-        <label htmlFor="date" className="text-gray-700 font-medium">
-          <FaCalendarAlt className="inline mr-2 text-blue-500" />
-          Date
-        </label>
-        <input
-          type="date"
-          {...formik.getFieldProps("date")}
-          id="date"
-          className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
-        />
-        {formik.touched.date && formik.errors.date && (
-          <p className="text-red-500 text-xs italic">{formik.errors.date}</p>
-        )}
-      </div>
+      {/* Frequency Field (Recurring only) */}
+      {isRecurring && (
+        <div className="flex flex-col space-y-1">
+          <label htmlFor="frequency" className="text-gray-700 font-medium">
+            <FaRedoAlt className="inline mr-2 text-blue-500" />
+            Frequency
+          </label>
+          <select
+            {...formik.getFieldProps("frequency")}
+            id="frequency"
+            className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+          >
+            <option value="">Select frequency</option>
+            <option value="daily">Daily</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+          </select>
+          {formik.touched.frequency && formik.errors.frequency && (
+            <p className="text-red-500 text-xs italic">{formik.errors.frequency}</p>
+          )}
+        </div>
+      )}
+
+      {/* Date Fields */}
+      {isRecurring ? (
+        <>
+          <div className="flex flex-col space-y-1">
+            <label htmlFor="startDate" className="text-gray-700 font-medium">
+              <FaCalendarAlt className="inline mr-2 text-blue-500" />
+              Start Date
+            </label>
+            <input
+              type="date"
+              {...formik.getFieldProps("startDate")}
+              id="startDate"
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+            {formik.touched.startDate && formik.errors.startDate && (
+              <p className="text-red-500 text-xs italic">{formik.errors.startDate}</p>
+            )}
+          </div>
+          <div className="flex flex-col space-y-1">
+            <label htmlFor="endDate" className="text-gray-700 font-medium">
+              End Date (Optional)
+            </label>
+            <input
+              type="date"
+              {...formik.getFieldProps("endDate")}
+              id="endDate"
+              className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+            />
+            {formik.touched.endDate && formik.errors.endDate && (
+              <p className="text-red-500 text-xs italic">{formik.errors.endDate}</p>
+            )}
+          </div>
+        </>
+      ) : (
+        <div className="flex flex-col space-y-1">
+          <label htmlFor="date" className="text-gray-700 font-medium">
+            <FaCalendarAlt className="inline mr-2 text-blue-500" />
+            Date
+          </label>
+          <input
+            type="date"
+            {...formik.getFieldProps("date")}
+            id="date"
+            className="w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:border-blue-500 focus:ring focus:ring-blue-500 focus:ring-opacity-50"
+          />
+          {formik.touched.date && formik.errors.date && (
+            <p className="text-red-500 text-xs italic">{formik.errors.date}</p>
+          )}
+        </div>
+      )}
 
       {/* Description Field */}
       <div className="flex flex-col space-y-1">
@@ -205,9 +323,12 @@ const TransactionForm = () => {
       {/* Submit Button */}
       <button
         type="submit"
-        className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200"
+        disabled={currentMutation.isPending}
+        className="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-colors duration-200 disabled:opacity-50"
       >
-        Submit Transaction
+        {currentMutation.isPending
+          ? "Adding..."
+          : `Add ${isRecurring ? 'Recurring Expense' : 'Transaction'}`}
       </button>
     </form>
   );

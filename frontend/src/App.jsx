@@ -12,6 +12,13 @@ import TransactionForm from "./components/Transactions/TransactionForm";
 import Dashboard from "./components/Users/Dashboard";
 import UserProfile from "./components/Users/UserProfile";
 import AuthRoute from "./components/Auth/AuthRoute";
+import RecurringExpenseList from "./components/RecurringExpenses/RecurringExpenseList";
+import ExpenseAnalytics from "./components/Analytics/ExpenseAnalytics";
+import BudgetDashboard from "./components/Budget/BudgetDashboard";
+import GoalsDashboard from "./components/Goals/GoalsDashboard";
+import ReportsDashboard from "./components/Reports/ReportsDashboard";
+import FinancialForecast from "./components/Goals/FinancialForecast";
+import NotificationCenter from "./components/Notifications/NotificationCenter";
 
 function App() {
   const user = useSelector((state) => state?.auth?.user);
@@ -70,6 +77,63 @@ function App() {
           element={
             <AuthRoute>
               <UserProfile />
+            </AuthRoute>
+          }
+        />
+
+        <Route
+          path="/recurring-expenses"
+          element={
+            <AuthRoute>
+              <RecurringExpenseList />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/analytics"
+          element={
+            <AuthRoute>
+              <ExpenseAnalytics />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/budgets"
+          element={
+            <AuthRoute>
+              <BudgetDashboard />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/goals"
+          element={
+            <AuthRoute>
+              <GoalsDashboard />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/reports"
+          element={
+            <AuthRoute>
+              <ReportsDashboard />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/forecast"
+          element={
+            <AuthRoute>
+              <FinancialForecast />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <AuthRoute>
+              <NotificationCenter />
             </AuthRoute>
           }
         />

@@ -92,3 +92,21 @@ export const deleteTransactionAPI = async (id) => {
     throw error;
   }
 };
+
+//! Get Analytics
+export const getAnalyticsAPI = async (filters = {}) => {
+  try {
+    const token = getUserFromStorage();
+    const params = new URLSearchParams(filters).toString();
+    const response = await axios.get(`${BASE_URL}/api/v1/transactions/analytics?${params}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(
+      "❌ Error fetching analytics:",
+      error.response?.data || error
+    );
+    throw error;
+  }
+};

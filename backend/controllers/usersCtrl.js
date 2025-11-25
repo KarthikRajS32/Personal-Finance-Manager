@@ -1,6 +1,8 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const speakeasy = require("speakeasy");
+const QRCode = require("qrcode");
 const User = require("../model/User");
 
 // Load JWT secret from .env or fallback
@@ -118,13 +120,20 @@ const usersController = {
 
   //! Update User Profile
   updateUserProfile: asyncHandler(async (req, res) => {
-    const { username, email } = req.body;
+    const { username, email, profile, preferences, notifications } = req.body;
+
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+    if (profile) updateData.profile = { ...profile };
+    if (preferences) updateData.preferences = { ...preferences };
+    if (notifications) updateData.notifications = { ...notifications };
 
     const updatedUser = await User.findByIdAndUpdate(
       req.user,
-      { username, email },
+      updateData,
       { new: true }
-    );
+    ).select('-password -security.mfaSecret');
 
     if (!updatedUser) {
       res.status(404);
@@ -133,8 +142,102 @@ const usersController = {
 
     res.status(200).json({
       message: "User profile updated successfully",
-      updatedUser,
+      user: updatedUser,
     });
+  }),
+
+  //! Setup MFA
+  setupMFA: asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user);
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    const secret = speakeasy.generateSecret({
+      name: `Personal Finance Manager (${user.email})`,
+      issuer: "Personal Finance Manager",
+    });
+
+    user.security.mfaSecret = secret.base32;
+    await user.save();
+
+    const qrCodeUrl = await QRCode.toDataURL(secret.otpauth_url);
+
+    res.status(200).json({
+      secret: secret.base32,
+      qrCode: qrCodeUrl,
+    });
+  }),
+
+  //! Verify and Enable MFA
+  verifyMFA: asyncHandler(async (req, res) => {
+    const { token } = req.body;
+    const user = await User.findById(req.user);
+
+    if (!user || !user.security.mfaSecret) {
+      res.status(400);
+      throw new Error("MFA not set up");
+    }
+
+    const verified = speakeasy.totp.verify({
+      secret: user.security.mfaSecret,
+      encoding: 'base32',
+      token,
+      window: 2,
+    });
+
+    if (!verified) {
+      res.status(400);
+      throw new Error("Invalid MFA token");
+    }
+
+    user.security.mfaEnabled = true;
+    await user.save();
+
+    res.status(200).json({ message: "MFA enabled successfully" });
+  }),
+
+  //! Disable MFA
+  disableMFA: asyncHandler(async (req, res) => {
+    const { token } = req.body;
+    const user = await User.findById(req.user);
+
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    if (user.security.mfaEnabled) {
+      const verified = speakeasy.totp.verify({
+        secret: user.security.mfaSecret,
+        encoding: 'base32',
+        token,
+        window: 2,
+      });
+
+      if (!verified) {
+        res.status(400);
+        throw new Error("Invalid MFA token");
+      }
+    }
+
+    user.security.mfaEnabled = false;
+    user.security.mfaSecret = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "MFA disabled successfully" });
+  }),
+
+  //! Get User Settings
+  getUserSettings: asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user).select('-password -security.mfaSecret');
+    if (!user) {
+      res.status(404);
+      throw new Error("User not found");
+    }
+
+    res.status(200).json(user);
   }),
 };
 

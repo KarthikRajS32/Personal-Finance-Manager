@@ -7,7 +7,14 @@ console.log("MONGO_URI =>", process.env.MONGO_URI); // debug line
 const userRouter = require("./routes/userRouter");
 const categoryRouter = require("./routes/categoryRouter");
 const transactionRouter = require("./routes/transactionRouter");
+const recurringExpenseRouter = require("./routes/recurringExpenseRouter");
+const budgetRouter = require("./routes/budgetRouter");
+const goalRouter = require("./routes/goalRouter");
+const reportRouter = require("./routes/reportRouter");
+const notificationRouter = require("./routes/notificationRouter");
+const exportRouter = require("./routes/exportRouter");
 const errorHandler = require("./middlewares/errorHandlerMiddleware");
+const NotificationService = require("./services/notificationService");
 
 const app = express();
 
@@ -47,10 +54,19 @@ app.use(express.urlencoded({ extended: true }));
 //! Routes
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/categories", categoryRouter);
-app.use("/api/v1/transactions", transactionRouter); // ✅ Correct route
+app.use("/api/v1/transactions", transactionRouter);
+app.use("/api/v1/recurring-expenses", recurringExpenseRouter);
+app.use("/api/v1/budgets", budgetRouter);
+app.use("/api/v1/goals", goalRouter);
+app.use("/api/v1/reports", reportRouter);
+app.use("/api/v1/notifications", notificationRouter);
+app.use("/api/v1/export", exportRouter);
 
 //! Error Handler Middleware
 app.use(errorHandler);
+
+//! Initialize Notification Service
+NotificationService.init();
 
 //! Start Server
 const PORT = process.env.PORT || 8000;

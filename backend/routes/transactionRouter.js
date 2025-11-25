@@ -32,4 +32,11 @@ transactionRouter.delete(
   transactionController.delete
 );
 
+//! Analytics
+transactionRouter.get(
+  "/analytics",
+  isAuthenticated,
+  transactionController.getAnalytics
+);
+
 module.exports = transactionRouter;

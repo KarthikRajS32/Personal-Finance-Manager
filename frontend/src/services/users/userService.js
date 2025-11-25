@@ -47,20 +47,75 @@ export const changePasswordAPI = async (newPassword) => {
 };
 
 //! update Profile
-export const updateProfileAPI = async ({ email, username }) => {
+export const updateProfileAPI = async (profileData) => {
   const token = getUserFromStorage();
   const response = await axios.put(
     `${BASE_URL}/api/v1/users/update-profile`,
-    {
-      email,
-      username,
-    },
+    profileData,
     {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     }
   );
-  //Return a promise
+  return response.data;
+};
+
+//! Get user settings
+export const getUserSettingsAPI = async () => {
+  const token = getUserFromStorage();
+  const response = await axios.get(
+    `${BASE_URL}/api/v1/users/settings`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+//! Setup MFA
+export const setupMFAAPI = async () => {
+  const token = getUserFromStorage();
+  const response = await axios.post(
+    `${BASE_URL}/api/v1/users/setup-mfa`,
+    {},
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+//! Verify MFA
+export const verifyMFAAPI = async ({ token: mfaToken }) => {
+  const token = getUserFromStorage();
+  const response = await axios.post(
+    `${BASE_URL}/api/v1/users/verify-mfa`,
+    { token: mfaToken },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+//! Disable MFA
+export const disableMFAAPI = async ({ token: mfaToken }) => {
+  const token = getUserFromStorage();
+  const response = await axios.post(
+    `${BASE_URL}/api/v1/users/disable-mfa`,
+    { token: mfaToken },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
   return response.data;
 };
