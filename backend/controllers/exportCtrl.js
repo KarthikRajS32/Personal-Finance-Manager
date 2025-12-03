@@ -1,6 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const { Parser } = require('json2csv');
-const PdfPrinter = require('pdfmake');
+const PdfPrinter = require('pdfmake/src/printer');
 const Transaction = require("../model/Transaction");
 const Budget = require("../model/Budget");
 const Goal = require("../model/Goal");
@@ -95,7 +95,7 @@ const exportController = {
     const netSavings = totalIncome - totalExpenses;
 
     const fonts = {
-      Roboto: {
+      Helvetica: {
         normal: 'Helvetica',
         bold: 'Helvetica-Bold',
       }
@@ -119,6 +119,9 @@ const exportController = {
       styles: {
         header: { fontSize: 18, bold: true, alignment: 'center' },
         subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] }
+      },
+      defaultStyle: {
+        font: 'Helvetica'
       }
     };
     
