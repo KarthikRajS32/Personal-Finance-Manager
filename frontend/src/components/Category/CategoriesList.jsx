@@ -39,8 +39,8 @@ const CategoriesList = () => {
       .catch((e) => console.log(e));
   };
   return (
-    <div className="max-w-md mx-auto my-10 bg-white p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Categories</h2>
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Categories</h2>
       {/* Display message */}
       {isLoading && <AlertMessage type="loading" message="Loading" />}
       {isError && (

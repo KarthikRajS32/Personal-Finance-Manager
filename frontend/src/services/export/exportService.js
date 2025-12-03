@@ -52,6 +52,29 @@ export const exportFinancialReportAPI = async (filters = {}) => {
   return response.data;
 };
 
+// Export PDF report
+export const exportPDFReportAPI = async (filters = {}) => {
+  const token = getUserFromStorage();
+  const params = new URLSearchParams(filters).toString();
+  const response = await axios.get(
+    `${BASE_URL}/api/v1/export/pdf-report?${params}`,
+    {
+      headers: { Authorization: `Bearer ${token}` },
+      responseType: 'blob',
+    }
+  );
+  
+  const blob = new Blob([response.data], { type: 'application/pdf' });
+  const url = window.URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.setAttribute('download', `financial_report_${new Date().toISOString().split('T')[0]}.pdf`);
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  window.URL.revokeObjectURL(url);
+};
+
 // Utility functions for client-side export
 export const downloadCSV = (data, filename) => {
   const csvContent = convertToCSV(data);

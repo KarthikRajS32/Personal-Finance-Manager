@@ -41,20 +41,21 @@ export default function PrivateNavbar() {
     { name: "Goals", href: "/goals" },
     { name: "Forecast", href: "/forecast" },
     { name: "Reports", href: "/reports" },
+    { name: "Recurring", href: "/recurring-expenses" },
     { name: "Notifications", href: "/notifications" },
     { name: "Analytics", href: "/analytics" },
   ];
 
   return (
-    <Disclosure as="nav" className="bg-white shadow">
+    <Disclosure as="nav" className="bg-white shadow-lg border-b border-gray-100 sticky top-0 z-50">
       {({ open }) => (
         <>
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-8xl px-2 sm:px-4 lg:px-8">
             <div className="flex justify-between h-16 items-center">
-              <div className="flex items-center gap-6">
+              <div className="flex items-center min-w-0 flex-1">
                 {/* Mobile button */}
-                <div className="flex md:hidden">
-                  <Disclosure.Button className="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <div className="flex lg:hidden mr-2">
+                  <Disclosure.Button className="text-gray-400 hover:text-gray-500 focus:outline-none p-2 rounded-md">
                     {open ? (
                       <XMarkIcon className="h-6 w-6" aria-hidden="true" />
                     ) : (
@@ -64,12 +65,17 @@ export default function PrivateNavbar() {
                 </div>
 
                 {/* Logo */}
-                <div className="flex-shrink-0 flex items-center">
-                  <SiAuthy className="h-8 w-auto text-green-500" />
-                </div>
+                <Link to="/dashboard" className="flex-shrink-0 flex items-center space-x-2 min-w-0">
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 rounded-lg">
+                    <SiAuthy className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                  </div>
+                  <span className="hidden sm:block text-lg lg:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent truncate">
+                    FinanceManager
+                  </span>
+                </Link>
 
                 {/* Desktop nav */}
-                <div className="hidden md:flex space-x-6">
+                <div className="hidden lg:flex space-x-1 ml-6 overflow-x-auto">
                   {navigation.map((item) => {
                     const isActive = location.pathname === item.href;
                     return (
@@ -77,10 +83,10 @@ export default function PrivateNavbar() {
                         key={item.name}
                         to={item.href}
                         className={classNames(
-                          "text-base font-medium transition duration-150",
+                          "px-2 xl:px-3 py-2 rounded-lg text-xs xl:text-sm font-medium transition-all duration-200 whitespace-nowrap",
                           isActive
-                            ? "text-indigo-700 underline underline-offset-8 font-semibold text-lg"
-                            : "text-gray-700 hover:text-indigo-600 hover:underline underline-offset-4"
+                            ? "bg-blue-100 text-blue-700 shadow-sm"
+                            : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
                         )}
                       >
                         {item.name}
@@ -90,14 +96,14 @@ export default function PrivateNavbar() {
                 </div>
               </div>
 
-              {/* Logout + Profile */}
-              <div className="flex items-center space-x-10">
+              {/* Profile + Logout */}
+              <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
                 {/* Profile Dropdown */}
                 {user && (
                   <Menu as="div" className="relative">
                     <div>
-                      <Menu.Button className="flex items-center text-sm focus:outline-none">
-                        <FaUserCircle className="h-8 w-8 text-gray-700" />
+                      <Menu.Button className="flex items-center text-sm focus:outline-none bg-gray-100 rounded-full p-1 hover:bg-gray-200 transition-colors">
+                        <FaUserCircle className="h-7 w-7 sm:h-8 sm:w-8 text-gray-600" />
                       </Menu.Button>
                     </div>
 
@@ -111,29 +117,30 @@ export default function PrivateNavbar() {
                       leaveTo="transform opacity-0 scale-95"
                     >
                       <Menu.Items
-                        className="absolute w-auto z-10 mt-2 w-64 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none 
-  right-1/2 translate-x-1/2 sm:right-0 sm:translate-x-0"
+                        className="absolute z-10 mt-2 w-56 sm:w-64 origin-top-right rounded-xl bg-white py-2 shadow-xl ring-1 ring-gray-200 focus:outline-none right-0"
                       >
                         <div className="px-4 py-2 text-sm text-gray-700">
                           Email:{" "}
                           <span className="font-medium">{user?.email}</span>
                         </div>
-                        <div className="px-4 py-2 text-sm text-gray-700 flex  items-center gap-2">
-                          Username:
-                          {isEditing ? (
-                            <input
-                              type="text"
-                              className="border px-2 py-1 text-sm rounded w-auto"
-                              value={editedUsername}
-                              onChange={(e) =>
-                                setEditedUsername(e.target.value)
-                              }
-                            />
-                          ) : (
-                            <span className="font-medium">
-                              {user?.username}
-                            </span>
-                          )}
+                        <div className="px-4 py-2 text-sm text-gray-700">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span>Username:</span>
+                            {isEditing ? (
+                              <input
+                                type="text"
+                                className="border px-2 py-1 text-sm rounded flex-1 min-w-0"
+                                value={editedUsername}
+                                onChange={(e) =>
+                                  setEditedUsername(e.target.value)
+                                }
+                              />
+                            ) : (
+                              <span className="font-medium truncate">
+                                {user?.username}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <div className="px-4 py-2 border-t border-gray-200">
                           {isEditing ? (
@@ -173,10 +180,10 @@ export default function PrivateNavbar() {
                 {user && (
                   <button
                     onClick={logoutHandler}
-                    className="inline-flex items-center gap-x-1.5 rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none"
+                    className="inline-flex items-center gap-x-1 sm:gap-x-1.5 rounded-lg bg-red-600 px-2 sm:px-4 py-2 text-xs sm:text-sm font-semibold text-white hover:bg-red-700 focus:outline-none transition-colors shadow-sm"
                   >
-                    <IoLogOutOutline className="h-5 w-5" />
-                    Logout
+                    <IoLogOutOutline className="h-4 w-4 sm:h-5 sm:w-5" />
+                    <span className="hidden sm:inline">Logout</span>
                   </button>
                 )}
               </div>
@@ -184,8 +191,8 @@ export default function PrivateNavbar() {
           </div>
 
           {/* Mobile Nav */}
-          <Disclosure.Panel className="md:hidden">
-            <div className="space-y-1 px-2 pb-3 pt-2">
+          <Disclosure.Panel className="lg:hidden border-t border-gray-200">
+            <div className="grid grid-cols-2 gap-1 px-2 py-3">
               {navigation.map((item) => {
                 const isActive = location.pathname === item.href;
                 return (
@@ -193,10 +200,10 @@ export default function PrivateNavbar() {
                     <Disclosure.Button
                       as="span"
                       className={classNames(
-                        "block px-3 py-2 rounded-md text-base font-medium",
+                        "block px-3 py-2 rounded-lg text-sm font-medium text-center transition-colors",
                         isActive
-                          ? "text-indigo-700 underline underline-offset-4 font-semibold"
-                          : "text-gray-700 hover:text-indigo-600 hover:underline"
+                          ? "bg-blue-100 text-blue-700 shadow-sm"
+                          : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
                       )}
                     >
                       {item.name}
@@ -204,6 +211,59 @@ export default function PrivateNavbar() {
                   </Link>
                 );
               })}
+              {/* Additional mobile-only links */}
+              {/* <Link to="/categories">
+                <Disclosure.Button
+                  as="span"
+                  className={classNames(
+                    "block px-3 py-2 rounded-lg text-sm font-medium text-center transition-colors",
+                    location.pathname === "/categories"
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  )}
+                >
+                  Categories
+                </Disclosure.Button>
+              </Link>
+              <Link to="/recurring-expenses">
+                <Disclosure.Button
+                  as="span"
+                  className={classNames(
+                    "block px-3 py-2 rounded-lg text-sm font-medium text-center transition-colors",
+                    location.pathname === "/recurring-expenses"
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  )}
+                >
+                  Recurring
+                </Disclosure.Button>
+              </Link>
+              <Link to="/forecast">
+                <Disclosure.Button
+                  as="span"
+                  className={classNames(
+                    "block px-3 py-2 rounded-lg text-sm font-medium text-center transition-colors",
+                    location.pathname === "/forecast"
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  )}
+                >
+                  Forecast
+                </Disclosure.Button>
+              </Link>
+              <Link to="/notifications">
+                <Disclosure.Button
+                  as="span"
+                  className={classNames(
+                    "block px-3 py-2 rounded-lg text-sm font-medium text-center transition-colors",
+                    location.pathname === "/notifications"
+                      ? "bg-blue-100 text-blue-700 shadow-sm"
+                      : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                  )}
+                >
+                  Notifications
+                </Disclosure.Button>
+              </Link> */}
             </div>
           </Disclosure.Panel>
         </>

@@ -5,8 +5,7 @@ import LoginForm from "./components/Users/Login";
 import { useSelector } from "react-redux";
 import RegistrationForm from "./components/Users/Register";
 import PrivateNavbar from "./components/Navbar/PrivateNavbar";
-import AddCategory from "./components/Category/AddCategory";
-import CategoriesList from "./components/Category/CategoriesList";
+import CategoryPage from "./components/Category/CategoryPage";
 import UpdateCategory from "./components/Category/UpdateCategory";
 import TransactionForm from "./components/Transactions/TransactionForm";
 import Dashboard from "./components/Users/Dashboard";
@@ -17,7 +16,7 @@ import ExpenseAnalytics from "./components/Analytics/ExpenseAnalytics";
 import BudgetDashboard from "./components/Budget/BudgetDashboard";
 import GoalsDashboard from "./components/Goals/GoalsDashboard";
 import ReportsDashboard from "./components/Reports/ReportsDashboard";
-import FinancialForecast from "./components/Goals/FinancialForecast";
+// import FinancialForecast from "./components/Goals/FinancialForecast";
 import NotificationCenter from "./components/Notifications/NotificationCenter";
 
 function App() {
@@ -33,18 +32,10 @@ function App() {
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<RegistrationForm />} />
         <Route
-          path="/add-category"
-          element={
-            <AuthRoute>
-              <AddCategory />
-            </AuthRoute>
-          }
-        />
-        <Route
           path="/categories"
           element={
             <AuthRoute>
-              <CategoriesList />
+              <CategoryPage />
             </AuthRoute>
           }
         />
@@ -90,14 +81,6 @@ function App() {
           }
         />
         <Route
-          path="/analytics"
-          element={
-            <AuthRoute>
-              <ExpenseAnalytics />
-            </AuthRoute>
-          }
-        />
-        <Route
           path="/budgets"
           element={
             <AuthRoute>
@@ -121,14 +104,7 @@ function App() {
             </AuthRoute>
           }
         />
-        <Route
-          path="/forecast"
-          element={
-            <AuthRoute>
-              <FinancialForecast />
-            </AuthRoute>
-          }
-        />
+
         <Route
           path="/notifications"
           element={

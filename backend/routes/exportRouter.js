@@ -16,4 +16,7 @@ exportRouter.get("/goals", isAuthenticated, exportController.exportGoals);
 // Export comprehensive report
 exportRouter.get("/financial-report", isAuthenticated, exportController.exportFinancialReport);
 
+// Export PDF report
+exportRouter.get("/pdf-report", isAuthenticated, exportController.exportPDFReport);
+
 module.exports = exportRouter;

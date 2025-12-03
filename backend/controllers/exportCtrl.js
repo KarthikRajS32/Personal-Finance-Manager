@@ -1,4 +1,6 @@
 const asyncHandler = require("express-async-handler");
+const { Parser } = require('json2csv');
+const PdfPrinter = require('pdfmake');
 const Transaction = require("../model/Transaction");
 const Budget = require("../model/Budget");
 const Goal = require("../model/Goal");
@@ -73,6 +75,58 @@ const exportController = {
       data: csvData,
       filename: `goals_${new Date().toISOString().split('T')[0]}.csv`,
     });
+  }),
+
+  // Export PDF Report
+  exportPDFReport: asyncHandler(async (req, res) => {
+    const { startDate, endDate } = req.query;
+    
+    const dateFilter = {};
+    if (startDate && endDate) {
+      dateFilter.date = { $gte: new Date(startDate), $lte: new Date(endDate) };
+    }
+
+    const transactions = await Transaction.find({ user: req.user, ...dateFilter });
+    const budgets = await Budget.find({ user: req.user, isActive: true });
+    const goals = await Goal.find({ user: req.user });
+
+    const totalIncome = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const netSavings = totalIncome - totalExpenses;
+
+    const fonts = {
+      Roboto: {
+        normal: 'Helvetica',
+        bold: 'Helvetica-Bold',
+      }
+    };
+    
+    const printer = new PdfPrinter(fonts);
+    
+    const docDefinition = {
+      content: [
+        { text: 'Financial Report', style: 'header' },
+        { text: 'Summary', style: 'subheader' },
+        { text: `Total Income: $${totalIncome.toFixed(2)}` },
+        { text: `Total Expenses: $${totalExpenses.toFixed(2)}` },
+        { text: `Net Savings: $${netSavings.toFixed(2)}` },
+        { text: `Savings Rate: ${totalIncome > 0 ? ((netSavings / totalIncome) * 100).toFixed(2) : 0}%` },
+        { text: 'Recent Transactions', style: 'subheader' },
+        ...transactions.slice(0, 10).map(t => ({
+          text: `${t.date.toDateString()} - ${t.type} - ${t.category} - $${t.amount} - ${t.description || ''}`
+        }))
+      ],
+      styles: {
+        header: { fontSize: 18, bold: true, alignment: 'center' },
+        subheader: { fontSize: 14, bold: true, margin: [0, 10, 0, 5] }
+      }
+    };
+    
+    const pdfDoc = printer.createPdfKitDocument(docDefinition);
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=financial_report_${new Date().toISOString().split('T')[0]}.pdf`);
+    pdfDoc.pipe(res);
+    pdfDoc.end();
   }),
 
   // Export comprehensive financial report

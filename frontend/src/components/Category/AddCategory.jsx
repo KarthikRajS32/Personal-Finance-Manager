@@ -1,15 +1,9 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
-import {
-  FaDollarSign,
-  FaCalendarAlt,
-  FaRegCommentDots,
-  FaWallet,
-} from "react-icons/fa";
+import { FaWallet } from "react-icons/fa";
 import { SiDatabricks } from "react-icons/si";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useMutation } from "@tanstack/react-query";
 import { addCategoryAPI } from "../../services/category/categoryService";
 import AlertMessage from "../Alert/AlertMessage";
 
@@ -20,14 +14,11 @@ const validationSchema = Yup.object({
     .oneOf(["income", "expense"]),
 });
 
-const AddCategory = () => {
-  //Navigate
-  const navigate = useNavigate();
-
+const AddCategory = ({ onCategoryAdded }) => {
   // Mutation
   const { mutateAsync, isPending, isError, error, isSuccess } = useMutation({
     mutationFn: addCategoryAPI,
-    mutationKey: ["login"],
+    mutationKey: ["add-category"],
   });
 
   const formik = useFormik({
@@ -36,19 +27,21 @@ const AddCategory = () => {
       name: "",
     },
     validationSchema,
-    onSubmit: (values) => {
-      mutateAsync(values)
-        .then((data) => {
-          navigate("/categories");
-        })
-        .catch((e) => console.log(e));
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        await mutateAsync(values);
+        resetForm();
+        onCategoryAdded();
+      } catch (e) {
+        console.log(e);
+      }
     },
   });
 
   return (
     <form
       onSubmit={formik.handleSubmit}
-      className="max-w-lg mx-auto my-10 bg-white p-6 rounded-lg shadow-lg space-y-6"
+      className="bg-white p-6 rounded-lg shadow-lg space-y-6 mb-8"
     >
       <div className="text-center">
         <h2 className="text-2xl font-semibold text-gray-800">
